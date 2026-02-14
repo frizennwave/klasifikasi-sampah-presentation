@@ -1,0 +1,1160 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Klasifikasi Sampah Otomatis - Data Science</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lora:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --forest-dark: #1a4d2e;
+        --forest-main: #2d6a4f;
+        --leaf-green: #40916c;
+        --mint: #52b788;
+        --sage: #74c69d;
+        --light-green: #95d5b2;
+        --cream: #f8f9fa;
+        --earth-brown: #8b5a3c;
+      }
+
+      body {
+        font-family: "Lora", serif;
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        overflow-x: hidden;
+        color: var(--forest-dark);
+      }
+
+      .presentation {
+        width: 100%;
+        height: 100vh;
+        position: relative;
+        scroll-snap-type: y mandatory;
+        overflow-y: scroll;
+        scroll-behavior: smooth;
+      }
+
+      .slide {
+        width: 100%;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        scroll-snap-align: start;
+        padding: 60px 40px;
+      }
+
+      /* Decorative Elements */
+      .clover {
+        position: absolute;
+        opacity: 0.15;
+        pointer-events: none;
+        animation: float 20s infinite ease-in-out;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0) rotate(0deg);
+        }
+        50% {
+          transform: translateY(-30px) rotate(5deg);
+        }
+      }
+
+      .clover-1 {
+        top: 10%;
+        left: 5%;
+        width: 120px;
+        animation-delay: 0s;
+      }
+      .clover-2 {
+        top: 60%;
+        right: 8%;
+        width: 100px;
+        animation-delay: 3s;
+      }
+      .clover-3 {
+        bottom: 15%;
+        left: 10%;
+        width: 90px;
+        animation-delay: 6s;
+      }
+      .clover-4 {
+        top: 30%;
+        right: 15%;
+        width: 110px;
+        animation-delay: 2s;
+      }
+
+      /* Slide 1: Title */
+      .slide-1 {
+        background: linear-gradient(
+          135deg,
+          var(--forest-dark) 0%,
+          var(--forest-main) 50%,
+          var(--leaf-green) 100%
+        );
+        color: white;
+      }
+
+      .slide-1 .content {
+        max-width: 1000px;
+        text-align: center;
+        z-index: 2;
+        animation: fadeInUp 1s ease-out;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .slide-1 h1 {
+        font-family: "Playfair Display", serif;
+        font-size: 4rem;
+        font-weight: 900;
+        margin-bottom: 20px;
+        line-height: 1.2;
+        text-shadow: 2px 4px 8px rgba(0, 0, 0, 0.3);
+        animation: fadeInUp 1s ease-out 0.2s backwards;
+      }
+
+      .slide-1 .subtitle {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        opacity: 0.95;
+        animation: fadeInUp 1s ease-out 0.4s backwards;
+      }
+
+      .slide-1 .tagline {
+        font-size: 1.3rem;
+        font-style: italic;
+        opacity: 0.85;
+        margin-top: 30px;
+        animation: fadeInUp 1s ease-out 0.6s backwards;
+      }
+
+      /* Slide 2: Industri */
+      .slide-2 {
+        background: var(--cream);
+      }
+
+      .slide-2 .content {
+        max-width: 1200px;
+        width: 100%;
+        animation: fadeInUp 1s ease-out;
+      }
+
+      .slide-title {
+        font-family: "Playfair Display", serif;
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--forest-dark);
+        margin-bottom: 50px;
+        text-align: center;
+        position: relative;
+        display: inline-block;
+        width: 100%;
+      }
+
+      .slide-title::after {
+        content: "";
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--mint), var(--leaf-green));
+        border-radius: 2px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 40px 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(29, 78, 46, 0.15);
+        border: 3px solid var(--light-green);
+        position: relative;
+        overflow: hidden;
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 50px rgba(29, 78, 46, 0.25);
+      }
+
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, var(--forest-main), var(--mint));
+      }
+
+      .stat-number {
+        font-family: "Playfair Display", serif;
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: var(--forest-main);
+        margin-bottom: 10px;
+        display: block;
+      }
+
+      .stat-label {
+        font-size: 1.2rem;
+        color: var(--forest-dark);
+        font-weight: 600;
+      }
+
+      .challenges {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(29, 78, 46, 0.1);
+        border-left: 6px solid var(--leaf-green);
+      }
+
+      .challenges h3 {
+        font-family: "Playfair Display", serif;
+        font-size: 1.8rem;
+        color: var(--forest-dark);
+        margin-bottom: 25px;
+      }
+
+      .challenge-item {
+        padding: 15px 0;
+        border-bottom: 1px solid var(--light-green);
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .challenge-item:last-child {
+        border-bottom: none;
+      }
+
+      .challenge-icon {
+        width: 30px;
+        height: 30px;
+        background: var(--mint);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-weight: 700;
+        color: white;
+      }
+
+      /* Slide 3: Masalah */
+      .slide-3 {
+        background: linear-gradient(135deg, #f1f8f4 0%, #e8f5e9 100%);
+      }
+
+      .slide-3 .content {
+        max-width: 1200px;
+        width: 100%;
+        animation: fadeInUp 1s ease-out;
+      }
+
+      .problems-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+        margin-bottom: 40px;
+      }
+
+      .problem-card {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(29, 78, 46, 0.1);
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+      }
+
+      .problem-card:hover {
+        transform: scale(1.03);
+      }
+
+      .problem-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 8px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--forest-main), var(--mint));
+      }
+
+      .problem-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+      }
+
+      .problem-title {
+        font-family: "Playfair Display", serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--forest-dark);
+        margin-bottom: 15px;
+      }
+
+      .problem-desc {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #555;
+      }
+
+      .conclusion-box {
+        background: var(--forest-main);
+        color: white;
+        padding: 30px 40px;
+        border-radius: 15px;
+        text-align: center;
+        font-size: 1.3rem;
+        font-weight: 600;
+        box-shadow: 0 10px 40px rgba(29, 78, 46, 0.3);
+      }
+
+      /* Slide 4: Solusi */
+      .slide-4 {
+        background: var(--cream);
+      }
+
+      .slide-4 .content {
+        max-width: 1300px;
+        width: 100%;
+        animation: fadeInUp 1s ease-out;
+      }
+
+      .solution-intro {
+        text-align: center;
+        margin-bottom: 50px;
+        font-size: 1.3rem;
+        color: var(--forest-dark);
+        font-style: italic;
+      }
+
+      .workflow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 60px;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      .workflow-step {
+        flex: 1;
+        min-width: 150px;
+        text-align: center;
+        position: relative;
+      }
+
+      .workflow-circle {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--forest-main), var(--mint));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        color: white;
+        font-family: "Playfair Display", serif;
+        font-size: 2rem;
+        font-weight: 700;
+        box-shadow: 0 8px 25px rgba(29, 78, 46, 0.3);
+        transition: transform 0.3s ease;
+      }
+
+      .workflow-step:hover .workflow-circle {
+        transform: scale(1.1) rotate(5deg);
+      }
+
+      .workflow-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--forest-dark);
+      }
+
+      .workflow-arrow {
+        font-size: 2rem;
+        color: var(--mint);
+        align-self: center;
+        margin: 0 10px;
+      }
+
+      .tech-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+      }
+
+      .tech-card {
+        background: white;
+        padding: 35px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(29, 78, 46, 0.1);
+        border-top: 5px solid var(--leaf-green);
+        transition: transform 0.3s ease;
+      }
+
+      .tech-card:hover {
+        transform: translateY(-8px);
+      }
+
+      .tech-title {
+        font-family: "Playfair Display", serif;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--forest-main);
+        margin-bottom: 12px;
+      }
+
+      .tech-desc {
+        font-size: 1.05rem;
+        line-height: 1.6;
+        color: #555;
+      }
+
+      /* Slide 5: Business Impact */
+      .slide-5 {
+        background: linear-gradient(135deg, #f1f8f4 0%, #e8f5e9 100%);
+      }
+
+      .slide-5 .content {
+        max-width: 1300px;
+        width: 100%;
+        animation: fadeInUp 1s ease-out;
+      }
+
+      .impact-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        margin-bottom: 50px;
+      }
+
+      .impact-card {
+        background: white;
+        padding: 45px 35px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(29, 78, 46, 0.15);
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+      }
+
+      .impact-card:hover {
+        transform: translateY(-12px);
+      }
+
+      .impact-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, var(--forest-main), var(--mint));
+      }
+
+      .impact-icon {
+        font-size: 3.5rem;
+        margin-bottom: 20px;
+      }
+
+      .impact-title {
+        font-family: "Playfair Display", serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--forest-dark);
+        margin-bottom: 15px;
+      }
+
+      .impact-metric {
+        font-family: "Playfair Display", serif;
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: var(--leaf-green);
+        margin-bottom: 10px;
+      }
+
+      .impact-desc {
+        font-size: 1rem;
+        color: #555;
+        line-height: 1.5;
+      }
+
+      .benefits {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(29, 78, 46, 0.1);
+      }
+
+      .benefits h3 {
+        font-family: "Playfair Display", serif;
+        font-size: 1.8rem;
+        color: var(--forest-dark);
+        margin-bottom: 25px;
+        text-align: center;
+      }
+
+      .benefit-item {
+        padding: 18px 0;
+        border-bottom: 1px solid var(--light-green);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 1.1rem;
+      }
+
+      .benefit-item:last-child {
+        border-bottom: none;
+      }
+
+      .benefit-check {
+        width: 35px;
+        height: 35px;
+        background: var(--mint);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.2rem;
+      }
+
+      /* Slide 6: Daftar Pustaka */
+      .slide-6 {
+        background: var(--cream);
+      }
+
+      .slide-6 .content {
+        max-width: 1000px;
+        width: 100%;
+        animation: fadeInUp 1s ease-out;
+      }
+
+      .references {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(29, 78, 46, 0.1);
+      }
+
+      .reference-item {
+        padding: 20px 0;
+        border-bottom: 1px solid var(--light-green);
+        font-size: 1rem;
+        line-height: 1.8;
+        color: #444;
+      }
+
+      .reference-item:last-child {
+        border-bottom: none;
+      }
+
+      .reference-item strong {
+        color: var(--forest-main);
+      }
+
+      /* Slide 7: Thank You */
+      .slide-7 {
+        background: linear-gradient(
+          135deg,
+          var(--forest-dark) 0%,
+          var(--forest-main) 50%,
+          var(--leaf-green) 100%
+        );
+        color: white;
+      }
+
+      .slide-7 .content {
+        text-align: center;
+        z-index: 2;
+        animation: fadeInUp 1s ease-out;
+      }
+
+      .slide-7 .clover-big {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 40px;
+        opacity: 0.9;
+        animation: pulse 2s infinite ease-in-out;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      .slide-7 h2 {
+        font-family: "Playfair Display", serif;
+        font-size: 4.5rem;
+        font-weight: 900;
+        margin-bottom: 25px;
+        text-shadow: 2px 4px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .slide-7 .message {
+        font-size: 1.6rem;
+        font-style: italic;
+        margin-bottom: 30px;
+        opacity: 0.95;
+      }
+
+      .slide-7 .team {
+        font-size: 1.3rem;
+        font-weight: 600;
+        opacity: 0.9;
+      }
+
+      /* Navigation */
+      .nav-dots {
+        position: fixed;
+        right: 30px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .nav-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--sage);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid var(--forest-dark);
+      }
+
+      .nav-dot.active {
+        background: var(--forest-main);
+        transform: scale(1.4);
+      }
+
+      .nav-dot:hover {
+        transform: scale(1.2);
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .slide-1 h1 {
+          font-size: 2.5rem;
+        }
+        .slide-1 .subtitle {
+          font-size: 1.3rem;
+        }
+        .slide-title {
+          font-size: 2rem;
+        }
+        .problems-grid {
+          grid-template-columns: 1fr;
+        }
+        .impact-grid {
+          grid-template-columns: 1fr;
+        }
+        .workflow {
+          flex-direction: column;
+        }
+        .workflow-arrow {
+          transform: rotate(90deg);
+          margin: 10px 0;
+        }
+        .stat-number {
+          font-size: 2.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="presentation" id="presentation">
+      <!-- Decorative Clovers -->
+      <svg
+        class="clover clover-1"
+        viewBox="0 0 100 100"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M50,50 Q35,30 25,35 Q15,40 20,50 Q25,60 35,55 Q45,50 50,50 Z"
+          fill="#40916c"
+        />
+        <path
+          d="M50,50 Q65,30 75,35 Q85,40 80,50 Q75,60 65,55 Q55,50 50,50 Z"
+          fill="#40916c"
+        />
+        <path
+          d="M50,50 Q45,65 50,75 Q55,85 60,80 Q65,75 60,65 Q55,55 50,50 Z"
+          fill="#40916c"
+        />
+        <path
+          d="M50,50 Q45,35 50,25 Q55,15 60,20 Q65,25 60,35 Q55,45 50,50 Z"
+          fill="#40916c"
+        />
+      </svg>
+      <svg
+        class="clover clover-2"
+        viewBox="0 0 100 100"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M50,50 Q35,30 25,35 Q15,40 20,50 Q25,60 35,55 Q45,50 50,50 Z"
+          fill="#52b788"
+        />
+        <path
+          d="M50,50 Q65,30 75,35 Q85,40 80,50 Q75,60 65,55 Q55,50 50,50 Z"
+          fill="#52b788"
+        />
+        <path
+          d="M50,50 Q45,65 50,75 Q55,85 60,80 Q65,75 60,65 Q55,55 50,50 Z"
+          fill="#52b788"
+        />
+        <path
+          d="M50,50 Q45,35 50,25 Q55,15 60,20 Q65,25 60,35 Q55,45 50,50 Z"
+          fill="#52b788"
+        />
+      </svg>
+      <svg
+        class="clover clover-3"
+        viewBox="0 0 100 100"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M50,50 Q35,30 25,35 Q15,40 20,50 Q25,60 35,55 Q45,50 50,50 Z"
+          fill="#74c69d"
+        />
+        <path
+          d="M50,50 Q65,30 75,35 Q85,40 80,50 Q75,60 65,55 Q55,50 50,50 Z"
+          fill="#74c69d"
+        />
+        <path
+          d="M50,50 Q45,65 50,75 Q55,85 60,80 Q65,75 60,65 Q55,55 50,50 Z"
+          fill="#74c69d"
+        />
+        <path
+          d="M50,50 Q45,35 50,25 Q55,15 60,20 Q65,25 60,35 Q55,45 50,50 Z"
+          fill="#74c69d"
+        />
+      </svg>
+      <svg
+        class="clover clover-4"
+        viewBox="0 0 100 100"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M50,50 Q35,30 25,35 Q15,40 20,50 Q25,60 35,55 Q45,50 50,50 Z"
+          fill="#95d5b2"
+        />
+        <path
+          d="M50,50 Q65,30 75,35 Q85,40 80,50 Q75,60 65,55 Q55,50 50,50 Z"
+          fill="#95d5b2"
+        />
+        <path
+          d="M50,50 Q45,65 50,75 Q55,85 60,80 Q65,75 60,65 Q55,55 50,50 Z"
+          fill="#95d5b2"
+        />
+        <path
+          d="M50,50 Q45,35 50,25 Q55,15 60,20 Q65,25 60,35 Q55,45 50,50 Z"
+          fill="#95d5b2"
+        />
+      </svg>
+
+      <!-- Slide 1: Title -->
+      <section class="slide slide-1">
+        <div class="content">
+          <h1>Penerapan Data Science<br />dalam Klasifikasi Sampah Otomatis</h1>
+          <div class="subtitle">pada Industri Daur Ulang</div>
+          <div class="tagline">🍀 Solusi berbasis Data Science dan Machine Learning untuk Masa Depan Berkelanjutan</div>
+        </div>
+      </section>
+
+      <!-- Slide 2: Industri -->
+      <section class="slide slide-2">
+        <div class="content">
+          <h2 class="slide-title">Kondisi Industri Daur Ulang di Indonesia</h2>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-number">278,7 juta</span>
+              <span class="stat-label">Populasi Indonesia</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-number">69,2 juta ton</span>
+              <span class="stat-label">Volume Sampah/Tahun</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-number">34,5%</span>
+              <span class="stat-label">Sampah Belum Terkelola</span>
+            </div>
+          </div>
+
+          <div class="challenges">
+            <h3>Tantangan Utama:</h3>
+            <div class="challenge-item">
+              <div class="challenge-icon">●</div>
+              <div>
+                Material bernilai ekonomi tinggi (plastik 18,5%, kertas 13,2%)
+                masih berakhir di TPA
+              </div>
+            </div>
+            <div class="challenge-item">
+              <div class="challenge-icon">●</div>
+              <div>
+                Pemilahan manual dengan kecepatan rendah (30-45 objek/menit)
+              </div>
+            </div>
+            <div class="challenge-item">
+              <div class="challenge-icon">●</div>
+              <div>Tingkat kesalahan manusia hingga 20% akibat kelelahan</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 3: Masalah -->
+      <section class="slide slide-3">
+        <div class="content">
+          <h2 class="slide-title">Permasalahan Pemilahan Manual</h2>
+
+          <div class="problems-grid">
+            <div class="problem-card">
+              <div class="problem-icon">⏱️</div>
+              <div class="problem-title">Lambat & Tidak Efisien</div>
+              <div class="problem-desc">
+                Volume sampah sangat besar, kemampuan manual terbatas, terjadi
+                penumpukan dan penurunan kapasitas produksi.
+              </div>
+            </div>
+            <div class="problem-card">
+              <div class="problem-icon">💰</div>
+              <div class="problem-title">Biaya Operasional Tinggi</div>
+              <div class="problem-desc">
+                Membutuhkan banyak tenaga kerja untuk gaji, pelatihan, dan
+                pengawasan pekerja.
+              </div>
+            </div>
+            <div class="problem-card">
+              <div class="problem-icon">⚠️</div>
+              <div class="problem-title">Tingkat Kesalahan Tinggi</div>
+              <div class="problem-desc">
+                Kelelahan dan keterbatasan konsentrasi menyebabkan kesalahan
+                identifikasi material sampah.
+              </div>
+            </div>
+            <div class="problem-card">
+              <div class="problem-icon">♻️</div>
+              <div class="problem-title">Efektivitas Rendah</div>
+              <div class="problem-desc">
+                Material bernilai seperti plastik dan logam tidak dapat
+                dimanfaatkan optimal dalam daur ulang.
+              </div>
+            </div>
+          </div>
+
+          <div class="conclusion-box">
+            Diperlukan pendekatan otomatis, cepat, dan akurat untuk
+            mengklasifikasikan sampah
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4: Solusi -->
+      <section class="slide slide-4">
+        <div class="content">
+          <h2 class="slide-title">Solusi: Klasifikasi Sampah Otomatis</h2>
+
+          <div class="solution-intro">
+            Memanfaatkan Data Science & Machine Learning (Computer Vision)
+          </div>
+
+          <div class="workflow">
+            <div class="workflow-step">
+              <div class="workflow-circle">1</div>
+              <div class="workflow-label">Conveyor Belt</div>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-step">
+              <div class="workflow-circle">2</div>
+              <div class="workflow-label">Pemindaian Kamera</div>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-step">
+              <div class="workflow-circle">3</div>
+              <div class="workflow-label">Pemrosesan Model</div>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-step">
+              <div class="workflow-circle">4</div>
+              <div class="workflow-label">Klasifikasi</div>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-step">
+              <div class="workflow-circle">5</div>
+              <div class="workflow-label">Pemilahan Otomatis</div>
+            </div>
+          </div>
+
+          <div class="tech-grid">
+            <div class="tech-card">
+              <div class="tech-title">Convolutional Neural Network (CNN)</div>
+              <div class="tech-desc">
+                Model deep learning untuk ekstraksi fitur visual dari gambar
+                sampah
+              </div>
+            </div>
+            <div class="tech-card">
+              <div class="tech-title">Computer Vision</div>
+              <div class="tech-desc">
+                Pengenalan pola dari bentuk, tekstur, dan warna untuk
+                identifikasi jenis sampah
+              </div>
+            </div>
+            <div class="tech-card">
+              <div class="tech-title">Real-time Processing</div>
+              <div class="tech-desc">
+                Klasifikasi otomatis dengan tingkat akurasi tinggi secara
+                real-time
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 5: Business Impact -->
+      <section class="slide slide-5">
+        <div class="content">
+          <h2 class="slide-title">Dampak Bisnis</h2>
+
+          <div class="impact-grid">
+            <div class="impact-card">
+              <div class="impact-icon">📈</div>
+              <div class="impact-title">Peningkatan Efisiensi</div>
+              <div class="impact-metric">+150%</div>
+              <div class="impact-desc">
+                Proses otomatis memproses volume lebih besar dalam waktu sama
+              </div>
+            </div>
+            <div class="impact-card">
+              <div class="impact-icon">💵</div>
+              <div class="impact-title">Penurunan Biaya</div>
+              <div class="impact-metric">-40%</div>
+              <div class="impact-desc">
+                Mengurangi ketergantungan pada tenaga kerja manual
+              </div>
+            </div>
+            <div class="impact-card">
+              <div class="impact-icon">✓</div>
+              <div class="impact-title">Peningkatan Akurasi</div>
+              <div class="impact-metric">95%</div>
+              <div class="impact-desc">
+                Klasifikasi konsisten mengurangi tercampurnya material
+              </div>
+            </div>
+          </div>
+
+          <div class="benefits">
+            <h3>Manfaat Tambahan:</h3>
+            <div class="benefit-item">
+              <div class="benefit-check">✓</div>
+              <div>
+                Peningkatan tingkat recovery material bernilai (plastik, logam,
+                kertas)
+              </div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-check">✓</div>
+              <div>
+                Meningkatkan citra perusahaan & komitmen sustainability (ESG)
+              </div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-check">✓</div>
+              <div>Mengurangi sampah yang berakhir di TPA</div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-check">✓</div>
+              <div>
+                Menciptakan model bisnis yang lebih berkelanjutan dan kompetitif
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 6: Daftar Pustaka -->
+      <section class="slide slide-6">
+        <div class="content">
+          <h2 class="slide-title">Daftar Pustaka</h2>
+
+          <div class="references">
+            <div class="reference-item">
+              <strong>Abdan, M. R., & Akbar, M. (2025).</strong> Klasifikasi
+              Sampah Daur Ulang Menggunakan Convolutional Neural Network dan
+              Gray Level Co-Occurrence Matrix.
+              <em>Jurnal Informatika Teknologi Dan Sains (Jinteks)</em>, 7(3),
+              1211–1220.
+            </div>
+            <div class="reference-item">
+              <strong
+                >Aprilla, A., Prihartono, W., & Rohmat, C. L. (2024).</strong
+              >
+              Optimasi model klasifikasi citra sampah daur ulang dengan
+              algoritma YOLO11. <em>Jurnal Khatulistiwa Informatika</em>, 12(2),
+              92–97.
+            </div>
+            <div class="reference-item">
+              <strong>Kurniawan, R. S., & Rosyani, P. (2024).</strong>
+              Klasifikasi jenis sampah menggunakan algoritma Convolutional
+              Neural Network (CNN).
+              <em>Jurnal Sistim Informasi dan Teknologi</em>, 6(3), 118–123.
+            </div>
+            <div class="reference-item">
+              <strong>Thio, S. E., & Susilo, J. (2025).</strong> Identifikasi
+              Pemilahan Sampah Berbasis Algoritma Transfer Learning CNN
+              Menggunakan MobileNetV2 dan EfficientNetB0. <em>Bit-Tech</em>,
+              8(1), 25–32.
+            </div>
+            <div class="reference-item">
+              <strong>Purba, M. E., et al. (2025).</strong> Klasifikasi sampah
+              organik dan anorganik menggunakan algoritma CNN.
+              <em>Jurnal Sifo Mikroskil (JSM)</em>, 26(1), 37–54.
+            </div>
+            <div class="reference-item">
+              <strong>Sihananto, A. N., et al. (2022).</strong> Pemilahan jenis
+              sampah menggunakan algoritma CNN. <em>SCAN</em>, 17(3), 23–27.
+            </div>
+            <div class="reference-item">
+              <strong
+                >Kementerian Lingkungan Hidup dan Kehutanan (KLHK).
+                (2023).</strong
+              >
+              Laporan Sistem Informasi Pengelolaan Sampah Nasional (SIPSN).
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 7: Thank You -->
+      <section class="slide slide-7">
+        <div class="content">
+          <img src="img/clover.png" alt="Logo Perusahaan" class="clover-big" />
+          <h2>Terima Kasih</h2>
+          <div class="message">
+            Mari Bersama Ciptakan Masa Depan yang Berkelanjutan
+          </div>
+          <div class="team">Data Science Team 4</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Navigation Dots -->
+    <div class="nav-dots">
+      <div class="nav-dot active" data-slide="0"></div>
+      <div class="nav-dot" data-slide="1"></div>
+      <div class="nav-dot" data-slide="2"></div>
+      <div class="nav-dot" data-slide="3"></div>
+      <div class="nav-dot" data-slide="4"></div>
+      <div class="nav-dot" data-slide="5"></div>
+      <div class="nav-dot" data-slide="6"></div>
+    </div>
+
+    <script>
+      // Navigation
+      const presentation = document.getElementById("presentation");
+      const slides = document.querySelectorAll(".slide");
+      const navDots = document.querySelectorAll(".nav-dot");
+
+      // Update active dot on scroll
+      presentation.addEventListener("scroll", () => {
+        const scrollPosition = presentation.scrollTop;
+        const slideHeight = window.innerHeight;
+        const currentSlide = Math.round(scrollPosition / slideHeight);
+
+        navDots.forEach((dot, index) => {
+          if (index === currentSlide) {
+            dot.classList.add("active");
+          } else {
+            dot.classList.remove("active");
+          }
+        });
+      });
+
+      // Click navigation
+      navDots.forEach((dot) => {
+        dot.addEventListener("click", () => {
+          const slideIndex = parseInt(dot.dataset.slide);
+          slides[slideIndex].scrollIntoView({ behavior: "smooth" });
+        });
+      });
+
+      // Keyboard navigation
+      document.addEventListener("keydown", (e) => {
+        const currentScroll = presentation.scrollTop;
+        const slideHeight = window.innerHeight;
+        const currentSlide = Math.round(currentScroll / slideHeight);
+
+        if (e.key === "ArrowDown" || e.key === "ArrowRight" || e.key === " ") {
+          e.preventDefault();
+          if (currentSlide < slides.length - 1) {
+            slides[currentSlide + 1].scrollIntoView({ behavior: "smooth" });
+          }
+        } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+          e.preventDefault();
+          if (currentSlide > 0) {
+            slides[currentSlide - 1].scrollIntoView({ behavior: "smooth" });
+          }
+        } else if (e.key === "Home") {
+          e.preventDefault();
+          slides[0].scrollIntoView({ behavior: "smooth" });
+        } else if (e.key === "End") {
+          e.preventDefault();
+          slides[slides.length - 1].scrollIntoView({ behavior: "smooth" });
+        }
+      });
+    </script>
+  </body>
+</html>
