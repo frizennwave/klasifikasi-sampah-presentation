@@ -89,7 +89,7 @@ PPT - Data Science/
 ├── index.html              # File presentasi utama
 ├── README.md              # Dokumentasi project
 ├── docs/
-│   └── data-science.pdf   # Versi PDF presentasi
+│   └── data-science.pdf   # Dokumen PDF presentasi
 └── img/
     └── clover.png         # Asset gambar clover
 ```
@@ -124,27 +124,9 @@ Presentasi ini dioptimalkan untuk berbagai ukuran layar:
 - Tablet (768px - 1366px)
 - Mobile (< 768px)
 
-## 🤝 Kontribusi
-
-Kontribusi selalu welcome! Jika Anda ingin berkontribusi:
-
-1. Fork repository ini
-2. Buat branch fitur baru (`git checkout -b feature/AmazingFeature`)
-3. Commit perubahan Anda (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
-
 ## 📄 Lisensi
 
 Project ini dilisensikan di bawah [MIT License](LICENSE) - lihat file LICENSE untuk detail lebih lanjut.
-
-## 👥 Author
-
-Dibuat dengan ❤️ untuk presentasi Data Science
-
-## 📞 Kontak
-
-Jika Anda memiliki pertanyaan atau saran, silakan buat issue di repository ini.
 
 ---
 
