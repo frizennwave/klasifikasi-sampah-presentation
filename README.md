@@ -48,7 +48,7 @@ Presentasi ini mencakup topik-topik berikut:
 
 1. Clone repository ini:
 ```bash
-git clone https://github.com/username/klasifikasi-sampah-presentation.git
+git clone https://github.com/frizennwave/klasifikasi-sampah-presentation.git
 cd klasifikasi-sampah-presentation
 ```
 
@@ -80,7 +80,7 @@ Jika Anda menggunakan VS Code:
 4. Scroll ke bagian "GitHub Pages"
 5. Pilih branch `main` dan folder `/ (root)`
 6. Klik Save
-7. Presentasi akan tersedia di: `https://username.github.io/nama-repository/`
+7. Presentasi akan tersedia di: `https://your-username.github.io/klasifikasi-sampah-presentation/`
 
 ## 📁 Struktur Project
 
